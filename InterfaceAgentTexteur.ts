@@ -12,7 +12,7 @@ export abstract class AgentTexteur {
 	abstract    DonneTitreDocument			            (): string;
     abstract    DonneCheminDocument                     (): string;
 	            EspaceFineDisponible		            (): boolean { return false; }
-	            JeTraiteLesInsecables		            (): boolean { return true; };
+	            JeTraiteLesInsecables		            (): boolean { return true; }
 	abstract    PermetsRetourDeCharriot	                (): boolean;
     
         

@@ -22,8 +22,8 @@ export class AgentTexteurAPI extends AgTxt.AgentTexteur {
     }
 
     CorrigeDansTexteur(leIDZone: string, leDebut: number, laFin: number, laChaine: string, automatique: boolean): Promise<boolean> {
-        let posDebut: obsidian.EditorPosition   = this.PositionVS(leDebut);
-        let posFin: obsidian.EditorPosition    = this.PositionVS(laFin);
+        const posDebut: obsidian.EditorPosition   = this.PositionVS(leDebut);
+        const posFin: obsidian.EditorPosition    = this.PositionVS(laFin);
 		this.monDocument.replaceRange(laChaine, posDebut, posFin);
 		return new Promise((resolve) => resolve(true));
     }
@@ -49,10 +49,10 @@ export class AgentTexteurAPI extends AgTxt.AgentTexteur {
     PeutCorriger(leIDZone: string, debut: number, fin: number, laChaineOrig: string): boolean {
         if(!this.DocEstDisponible()) return false;
         
-        let posDebut: obsidian.EditorPosition = this.PositionVS(debut);
+        const posDebut: obsidian.EditorPosition = this.PositionVS(debut);
         let posFin: obsidian.EditorPosition = this.PositionVS(fin);
 
-        let contexteMatchParfaitement = this.monDocument.getRange(posDebut, posFin) == laChaineOrig;
+        const contexteMatchParfaitement = this.monDocument.getRange(posDebut, posFin) == laChaineOrig;
         let contexteMatchAuDebut = true;
         if(!contexteMatchParfaitement)
         {
@@ -64,8 +64,8 @@ export class AgentTexteurAPI extends AgTxt.AgentTexteur {
     }
     
     SelectionneIntervalle(leIDZone: string, debut: number, fin: number): void {
-		let posDebut: obsidian.EditorPosition = this.PositionVS(debut);
-		let posFin: obsidian.EditorPosition = this.PositionVS(fin);
+		const posDebut: obsidian.EditorPosition = this.PositionVS(debut);
+		const posFin: obsidian.EditorPosition = this.PositionVS(fin);
 
 		this.monDocument.setSelection(posDebut, posFin);
 		this.monDocument.focus()
@@ -73,11 +73,11 @@ export class AgentTexteurAPI extends AgTxt.AgentTexteur {
 
     DonneLesZonesACorriger(): Promise<AgTxt.ZoneDeTexte[]> {
         return new Promise<AgTxt.ZoneDeTexte[]>((resolve) => {
-            let lesZones: AgTxt.ZoneDeTexte[] = new Array;
-			let leTexte: string = this.monDocument.getValue();
-			let selDebut: number = this.PositionAbsolue(this.monDocument.getCursor('from'));
-			let selFin: number = this.PositionAbsolue(this.monDocument.getCursor('to'));
-			let uneZone: AgTxt.ZoneDeTexte = new AgTxt.ZoneDeTexte(leTexte, selDebut,selFin, "0");
+            const lesZones: AgTxt.ZoneDeTexte[] = [];
+			const leTexte: string = this.monDocument.getValue();
+			const selDebut: number = this.PositionAbsolue(this.monDocument.getCursor('from'));
+			const selFin: number = this.PositionAbsolue(this.monDocument.getCursor('to'));
+			const uneZone: AgTxt.ZoneDeTexte = new AgTxt.ZoneDeTexte(leTexte, selDebut,selFin, "0");
 			lesZones.push(uneZone);
 			resolve(lesZones);
         });

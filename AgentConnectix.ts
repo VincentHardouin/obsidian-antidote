@@ -1,8 +1,8 @@
 import * as agTexteur from './InterfaceAgentTexteur';
-import { regReader } from './Registry';
+import {regReader} from './Registry';
 
 function aRecuToutLesPaquets(laListe: Array<string>, leNombrePaquet: number): boolean {
-    for(let item of laListe)
+    for(const item of laListe)
     {
          if(item.length == 0) return false;
     }
@@ -27,13 +27,13 @@ export class AgentConnectix {
 
     async Initialise() {
         if(this.estInit) return true;
-        let retour = await this.ObtiensReglages();
+        const retour = await this.ObtiensReglages();
         this.estInit = true;
         return retour;
     }
 
     LanceCorrecteur():void {
-        let laRequete = {
+        const laRequete = {
         message : "LanceOutil",
         outilApi : "Correcteur",
         }
@@ -41,7 +41,7 @@ export class AgentConnectix {
     }
 
     LanceDictionnaire():void {
-        let laRequete = {
+        const laRequete = {
         message : "LanceOutil",
         outilApi : "Dictionnaires",
         }
@@ -49,7 +49,7 @@ export class AgentConnectix {
     }
 
     LanceGuide():void {
-        let laRequete = {
+        const laRequete = {
         message : "LanceOutil",
         outilApi : "Guides",
         }
@@ -58,7 +58,7 @@ export class AgentConnectix {
 
     private GereMessage(data: any){
         console.log(data);
-        let laReponse :any = {};
+        const laReponse :any = {};
         laReponse.idMessage = data.idMessage;
         if(data.message == "init")
         {
@@ -86,7 +86,7 @@ export class AgentConnectix {
         else if(data.message == "donneZonesTexte")
         {
             this.monAgent?.DonneLesZonesACorriger().then((lesZones) => {
-                let lesZonesEnJSON : agTexteur.ZoneDeTexteJSONAPI[] = new Array();
+                const lesZonesEnJSON : agTexteur.ZoneDeTexteJSONAPI[] = [];
 
                 lesZones?.forEach(element => {
                     lesZonesEnJSON.push(element.toJsonAPI());
@@ -97,20 +97,20 @@ export class AgentConnectix {
         }
         else if(data.message == "editionPossible")
         {
-            let idZone: string = data.donnees.idZone;
-            let chaine: string = data.donnees.contexte;
-            let debut: number = data.donnees.positionDebut;
-            let fin:number = data.donnees.positionFin;
+            const idZone: string = data.donnees.idZone;
+            const chaine: string = data.donnees.contexte;
+            const debut: number = data.donnees.positionDebut;
+            const fin:number = data.donnees.positionFin;
 
             laReponse.donnees = this.monAgent?.PeutCorriger(idZone,debut,fin, chaine);
             this.EnvoieMessage(JSON.stringify(laReponse));
         }
         else if(data.message == "remplace")
         {
-            let idZone: string = data.donnees.idZone;
-            let chaine: string = data.donnees.nouvelleChaine;
-            let debut: number = data.donnees.positionRemplacementDebut;
-            let fin: number = data.donnees.positionRemplacementFin;
+            const idZone: string = data.donnees.idZone;
+            const chaine: string = data.donnees.nouvelleChaine;
+            const debut: number = data.donnees.positionRemplacementDebut;
+            const fin: number = data.donnees.positionRemplacementFin;
 
             this.monAgent?.CorrigeDansTexteur(idZone, debut, fin, chaine, false).then((reponse) => {
                 this.monAgent?.MetsFocusSurLeDocument();
@@ -120,9 +120,9 @@ export class AgentConnectix {
         }
         else if(data.message == "selectionne")
         {
-            let idZone: string = data.donnees.idZone;
-            let debut: number = data.donnees.positionDebut;
-            let fin: number = data.donnees.positionFin;
+            const idZone: string = data.donnees.idZone;
+            const debut: number = data.donnees.positionDebut;
+            const fin: number = data.donnees.positionFin;
 
             this.monAgent?.SelectionneIntervalle(idZone, debut, fin);
         }
@@ -137,42 +137,40 @@ export class AgentConnectix {
         {
             const plist = require('bplist-parser');
             const homedir = require('os').homedir();
-            let data;
-            let xml = await plist.parseFile(homedir + "/Library/Preferences/com.druide.Connectix.plist");
-            data = xml[0].DossierApplication;
+            const xml = await plist.parseFile(homedir + "/Library/Preferences/com.druide.Connectix.plist");
+            const data = xml[0].DossierApplication;
             return data + "/Contents/SharedSupport/AgentConnectixConsole";
         }
         else if(process.platform === "linux")
             return "/usr/local/bin/AgentConnectixConsole";
         else if(process.platform === "win32")
         {
-            let retour = regReader("HKEY_LOCAL_MACHINE\\SOFTWARE\\Druide informatique inc.\\Connectix", "DossierConnectix");
+            const retour = regReader("HKEY_LOCAL_MACHINE\\SOFTWARE\\Druide informatique inc.\\Connectix", "DossierConnectix");
             return retour + "AgentConnectixConsole.exe";
         }
     }
 
     private async InitWS() {
-        let lePortWS = this.prefs.port;
-        this.ws = new WebSocket("ws://localhost:" + lePortWS);
-        let moiMeme = this;
-        this.ws.addEventListener('message', (event)=> {
+        const lePortWS = this.prefs.port;
+        const ws = new WebSocket("ws://localhost:" + lePortWS);
+        const moiMeme = this;
+        ws.addEventListener('message', (event)=> {
 			console.log({event});
 			moiMeme.RecoisMessage(event.data); });
-        this.ws.addEventListener('close', () => { moiMeme.estInit = false; });
-        this.ws.addEventListener('error', (data) => { moiMeme.estInit = false; });
-        let Promesse = new Promise<boolean>(resolve => {
-            this.ws.addEventListener('open', () => { resolve(true);});
+        ws.addEventListener('close', () => { moiMeme.estInit = false; });
+        ws.addEventListener('error', (data) => { moiMeme.estInit = false; });
+        const Promesse = new Promise<boolean>(resolve => {
+            ws.addEventListener('open', () => { resolve(true);});
         });
-        let retour = await Promesse;
-        return retour;
+		return await Promesse;
     }
 
     private Digere(data : any) {
         if(Object.hasOwnProperty.call(data, "idPaquet"))
         {
-            let lesDonnees: string = data.donnees;
-            let leNombrePaquet: number = data.totalPaquet;
-            let leNumeroPaquet: number = data.idPaquet;
+            const lesDonnees: string = data.donnees;
+            const leNombrePaquet: number = data.totalPaquet;
+            const leNumeroPaquet: number = data.idPaquet;
 
             if(this.listePaquetsRecu.length < leNombrePaquet)
                 this.listePaquetsRecu =  new Array(leNombrePaquet);
@@ -181,7 +179,7 @@ export class AgentConnectix {
             
             if(aRecuToutLesPaquets(this.listePaquetsRecu, leNombrePaquet))
             {
-                let leMessageStr: string = this.listePaquetsRecu.join('');
+                const leMessageStr: string = this.listePaquetsRecu.join('');
                 this.listePaquetsRecu = new Array(0);
                 this.GereMessage(JSON.parse(leMessageStr));
             }
@@ -189,8 +187,7 @@ export class AgentConnectix {
     }
 
     private RecoisMessage(data : any) {
-		console.log({data })
-        let leMsg = JSON.parse(data);
+        const leMsg = JSON.parse(data);
         this.Digere(leMsg);
     }
 
@@ -201,7 +198,7 @@ export class AgentConnectix {
     }
 
     private EnvoieMessage(msg : string) {
-        let laRequete = {
+        const laRequete = {
             idPaquet : 0,
             totalPaquet : 1,
             donnees : msg
@@ -211,18 +208,18 @@ export class AgentConnectix {
     }
 
     private async ObtiensReglages() {
-        let path = await this.DonnePathAgentConsole();
-        let AgentConsole = require('child_process').spawn(path, ["--api"]);
+        const path = await this.DonnePathAgentConsole();
+        const AgentConsole = require('child_process').spawn(path, ["--api"]);
         
-        let Promesse = new Promise<boolean>(resolve => {
+        const Promesse = new Promise<boolean>(resolve => {
 
         AgentConsole.stdout.on('data', (data:any) => {
-            let str: String = data.toString('utf8');
+            const str: string = data.toString('utf8');
             this.prefs = JSON.parse(str.substring(str.indexOf('{'), str.length));
             this.InitWS().then(retour=> {resolve(retour);});
         })});
         AgentConsole.stdin.write('API')
-        let retour = await Promesse;
+        const retour = await Promesse;
         return retour;
     }
 }
