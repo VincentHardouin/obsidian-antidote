@@ -160,15 +160,14 @@ export class AgentConnectix {
   private async InitWS() {
     const lePortWS = this.prefs.port;
     const ws = new WebSocket(`ws://localhost:${lePortWS}`);
-    const moiMeme = this;
     ws.addEventListener('message', (event) => {
-      moiMeme.RecoisMessage(event.data);
+      this.RecoisMessage(event.data);
     });
     ws.addEventListener('close', () => {
-      moiMeme.estInit = false;
+      this.estInit = false;
     });
     ws.addEventListener('error', () => {
-      moiMeme.estInit = false;
+      this.estInit = false;
     });
     const Promesse = new Promise<boolean>((resolve) => {
       ws.addEventListener('open', () => {
