@@ -57,7 +57,6 @@ export class AgentConnectix {
     }
 
     private GereMessage(data: any){
-        console.log(data);
         const laReponse :any = {};
         laReponse.idMessage = data.idMessage;
         if(data.message == "init")
@@ -69,7 +68,6 @@ export class AgentConnectix {
             laReponse.permetEspaceFin = this.monAgent?.EspaceFineDisponible();
             laReponse.remplaceSansSelection = true;
 
-			console.log({ laReponse });
             this.EnvoieMessage(JSON.stringify(laReponse));
         }
         else if(data.message == "cheminDocument")
@@ -154,8 +152,7 @@ export class AgentConnectix {
         const lePortWS = this.prefs.port;
         const ws = new WebSocket("ws://localhost:" + lePortWS);
         const moiMeme = this;
-        ws.addEventListener('message', (event)=> {
-			console.log({event});
+        ws.addEventListener('message', (event) => {
 			moiMeme.RecoisMessage(event.data); });
         ws.addEventListener('close', () => { moiMeme.estInit = false; });
         ws.addEventListener('error', (data) => { moiMeme.estInit = false; });

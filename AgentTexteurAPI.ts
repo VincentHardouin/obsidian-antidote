@@ -8,7 +8,6 @@ export class AgentTexteurAPI extends AgTxt.AgentTexteur {
 
     constructor(doc: obsidian.Editor, file: obsidian.TFile) {
         super();
-        console.log(file);
         this.monDocument = doc;
 		this.file = file;
     }
