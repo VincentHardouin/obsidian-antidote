@@ -3,14 +3,10 @@ import * as obsidian from "obsidian";
 import { AgentConnectix } from './AgentConnectix';
 import { AgentTexteurAPI } from './AgentTexteurAPI';
 
-// Remember to rename these classes and interfaces!
-
-interface MyPluginSettings {
-	mySetting: string;
+interface AntidoteSettings {
 }
 
-const DEFAULT_SETTINGS: MyPluginSettings = {
-	mySetting: 'default'
+const DEFAULT_SETTINGS: AntidoteSettings = {
 }
 
 const AcMap : Map<obsidian.Editor, AgentConnectix> = new Map;
@@ -24,7 +20,7 @@ function DonneAgentConnectixPourDocument(td: obsidian.Editor, tf: obsidian.TFile
 }
 
 export default class MyPlugin extends Plugin {
-	settings: MyPluginSettings;
+	settings: AntidoteSettings;
 
 	async onload() {
 		await this.loadSettings();
