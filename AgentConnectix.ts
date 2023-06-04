@@ -19,8 +19,8 @@ export class AgentConnectix {
 
   constructor(agent: agTexteur.AgentTexteur) {
     this.monAgent = agent;
-    this.prefs = {};
-    this.ws = {};
+    this.prefs = {} as JSON;
+    this.ws = {} as WebSocket;
     this.listePaquetsRecu = new Array(0);
     this.estInit = false;
   }
@@ -60,67 +60,84 @@ export class AgentConnectix {
   private GereMessage(data: any) {
     const laReponse: any = {};
     laReponse.idMessage = data.idMessage;
-    if (data.message === 'init') {
-      laReponse.titreDocument = this.monAgent?.DonneTitreDocument();
-      laReponse.retourChariot = this.monAgent?.DonneRetourDeCharriot();
-      laReponse.permetRetourChariot = this.monAgent?.PermetsRetourDeCharriot();
-      laReponse.permetEspaceInsecables = this.monAgent?.JeTraiteLesInsecables();
-      laReponse.permetEspaceFin = this.monAgent?.EspaceFineDisponible();
-      laReponse.remplaceSansSelection = true;
 
-      this.EnvoieMessage(JSON.stringify(laReponse));
-    }
-    else if (data.message === 'cheminDocument') {
-      laReponse.donnee = !this.monAgent?.DonneCheminDocument();
-      this.EnvoieMessage(JSON.stringify(laReponse));
-    }
-    else if (data.message === 'docEstDisponible') {
-      laReponse.donnees = this.monAgent?.DocEstDisponible();
+    switch (data.message) {
+      case 'init':
+        this.initialisation(laReponse);
+        break;
+      case 'cheminDocument':
+        laReponse.donnee = !this.monAgent?.DonneCheminDocument();
+        break;
+      case 'docEstDisponible':
+        laReponse.donnees = this.monAgent?.DocEstDisponible();
+        break;
+      case 'donneZonesTexte':
+        this.monAgent?.DonneLesZonesACorriger().then((lesZones) => {
+          const lesZonesEnJSON: agTexteur.ZoneDeTexteJSONAPI[] = [];
 
-      this.EnvoieMessage(JSON.stringify(laReponse));
-    }
-    else if (data.message === 'donneZonesTexte') {
-      this.monAgent?.DonneLesZonesACorriger().then((lesZones) => {
-        const lesZonesEnJSON: agTexteur.ZoneDeTexteJSONAPI[] = [];
-
-        lesZones?.forEach((element) => {
-          lesZonesEnJSON.push(element.toJsonAPI());
+          lesZones?.forEach((element) => {
+            lesZonesEnJSON.push(element.toJsonAPI());
+          });
+          laReponse.donnees = lesZonesEnJSON;
         });
-        laReponse.donnees = lesZonesEnJSON;
-        this.EnvoieMessage(JSON.stringify(laReponse));
-      });
+        break;
+      case 'editionPossible':
+        this.peutCorriger(laReponse, data.donnees);
+        break;
+      case 'remplace':
+        this.peutRemplacer(laReponse, data.donnees);
+        break;
+      case 'selectionne':
+        this.selectionne(laReponse, data.donnees);
+        return;
+      case 'retourneAuDocument':
+        this.monAgent?.RetourneAuTexteur();
+        return;
     }
-    else if (data.message === 'editionPossible') {
-      const idZone: string = data.donnees.idZone;
-      const chaine: string = data.donnees.contexte;
-      const debut: number = data.donnees.positionDebut;
-      const fin: number = data.donnees.positionFin;
 
-      laReponse.donnees = this.monAgent?.PeutCorriger(idZone, debut, fin, chaine);
-      this.EnvoieMessage(JSON.stringify(laReponse));
-    }
-    else if (data.message === 'remplace') {
-      const idZone: string = data.donnees.idZone;
-      const chaine: string = data.donnees.nouvelleChaine;
-      const debut: number = data.donnees.positionRemplacementDebut;
-      const fin: number = data.donnees.positionRemplacementFin;
+    this.EnvoieMessage(JSON.stringify(laReponse));
+  }
 
-      this.monAgent?.CorrigeDansTexteur(idZone, debut, fin, chaine, false).then((reponse) => {
-        this.monAgent?.MetsFocusSurLeDocument();
-        laReponse.donnees = true;
-        this.EnvoieMessage(JSON.stringify(laReponse));
-      });
-    }
-    else if (data.message === 'selectionne') {
-      const idZone: string = data.donnees.idZone;
-      const debut: number = data.donnees.positionDebut;
-      const fin: number = data.donnees.positionFin;
+  private cheminDocument(laReponse: any) {
+    laReponse.donnee = !this.monAgent?.DonneCheminDocument();
+  }
 
-      this.monAgent?.SelectionneIntervalle(idZone, debut, fin);
-    }
-    else if (data.message === 'retourneAuDocument') {
-      this.monAgent?.RetourneAuTexteur();
-    }
+  private initialisation(laReponse: any) {
+    laReponse.titreDocument = this.monAgent?.DonneTitreDocument();
+    laReponse.retourChariot = this.monAgent?.DonneRetourDeCharriot();
+    laReponse.permetRetourChariot = this.monAgent?.PermetsRetourDeCharriot();
+    laReponse.permetEspaceInsecables = this.monAgent?.JeTraiteLesInsecables();
+    laReponse.permetEspaceFin = this.monAgent?.EspaceFineDisponible();
+    laReponse.remplaceSansSelection = true;
+  }
+
+  private peutCorriger(laReponse: any, data: any) {
+    const idZone: string = data.donnees.idZone;
+    const chaine: string = data.donnees.contexte;
+    const debut: number = data.donnees.positionDebut;
+    const fin: number = data.donnees.positionFin;
+
+    laReponse.donnees = this.monAgent?.PeutCorriger(idZone, debut, fin, chaine);
+  }
+
+  private peutRemplacer(laReponse: any, data: any) {
+    const idZone: string = data.donnees.idZone;
+    const chaine: string = data.donnees.nouvelleChaine;
+    const debut: number = data.donnees.positionRemplacementDebut;
+    const fin: number = data.donnees.positionRemplacementFin;
+
+    this.monAgent?.CorrigeDansTexteur(idZone, debut, fin, chaine, false).then(() => {
+      this.monAgent?.MetsFocusSurLeDocument();
+      laReponse.donnees = true;
+    });
+  }
+
+  private selectionne(laReponse: any, data: any) {
+    const idZone: string = data.donnees.idZone;
+    const debut: number = data.donnees.positionDebut;
+    const fin: number = data.donnees.positionFin;
+
+    this.monAgent?.SelectionneIntervalle(idZone, debut, fin);
   }
 
   private async DonnePathAgentConsole() {
