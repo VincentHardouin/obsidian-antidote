@@ -2,6 +2,9 @@ import type * as agTexteur from './InterfaceAgentTexteur';
 import { regReader } from './Registry';
 
 function aRecuToutLesPaquets(laListe: Array<string>, leNombrePaquet: number): boolean {
+  if (laListe.length !== leNombrePaquet) {
+    return false;
+  }
   for (const item of laListe) {
     if (item.length === 0)
       return false;
